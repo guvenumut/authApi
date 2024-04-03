@@ -1,29 +1,16 @@
-import { MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const uri = process.env.MONGODB_URI;
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: "1", 
-  }
-});
-
-async function connectDB() {
-  try {
-    await client.connect();
-    console.log('MongoDB bağlantısı başarılı');
-
-    
-
-  } catch (error) {
-    console.error('MongoDB bağlantı hatası:', error.message);
-    process.exit(1);
-  } finally {
-    await client.close();
+const connectDatabase = async () => {
+  try {      
+      await mongoose.connect(uri)
+      console.log('Database baglantisi basarili.')
+  } catch (err) {
+      console.log(err)
   }
 }
-
-export default connectDB;
+export default connectDatabase
