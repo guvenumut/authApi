@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import router from './app/routes.js'
 import connectDatabase from './db/connectDB.js';
 import cookieParser from 'cookie-parser';
-
+import { requireAuth, checkUser }from './middleware/authMiddleWare.js';
 
 dotenv.config();
 connectDatabase()
@@ -24,10 +24,13 @@ app.use(cookieParser())
 
 app.set('view engine', 'ejs');
 
-
+app.use(checkUser);
 app.use("/",router)
 
-app.get('/smoothies',(req,res)=>res.render("smoothies"));
+
+
+app.get("/",requireAuth,(req,res)=>{res.render("home.ejs")})
+app.get('/smoothies',requireAuth,(req,res)=>res.render("smoothies"));
 
 
 const PORT = process.env.PORT ;
