@@ -1,13 +1,16 @@
 import jwt from "jsonwebtoken"
 import User from '../db/userSchema.js';
+import Token from "../db/tokenSchema.js";
 
-
-const requireAuth= (req,res,next)=>{
-    const token = req.cookies.jwt;
-    if(token){
-        jwt.verify(token,process.env.JWT_SECRET,(err,decodedToken)=>{
+const requireAuth= async(req,res,next)=>{
+    const reqtoken = req.cookies.jwt;
+    console.log(reqtoken+"reqtoken");
+    var cookie = await Token.findOne({token:reqtoken});   
+    
+    if(reqtoken){
+        jwt.verify(reqtoken,process.env.JWT_SECRET,(err,decodedToken)=>{
             if(err){
-                console.log(err.message);
+                console.log(err.message+"iferr");
                 res.redirect("/login")
             }else{
                 console.log(decodedToken)
@@ -19,13 +22,29 @@ const requireAuth= (req,res,next)=>{
     }
 }
 
-const checkUser=(req,res,next)=>{
-    const token=req.cookies.jwt;
+const blockPath=(req,res,next)=>{
+    const reqtoken=req.cookies.jwt;
+    if(reqtoken){
+        return res.redirect("/");
+        
+    }else{
+        next();
+    }
+}
+const isCookieExist=async(req,res)=>{
+    let reqtoken=req.cookies.jwt;
+    const cookie = await Token.findOne({token:reqtoken});
 
-    if(token){
-        jwt.verify(token,process.env.JWT_SECRET,async(err,decodedToken)=>{
+}
+
+const checkUser=async(req,res,next)=>{
+    const reqtoken=req.cookies.jwt
+       
+    
+    if(reqtoken){
+        jwt.verify(reqtoken,process.env.JWT_SECRET,async(err,decodedToken)=>{
             if(err){
-                console.log(err.message);
+                console.log(err.message+"iferrrasdr");
                 res.locals.user=null;
                 
                 next();
@@ -33,8 +52,7 @@ const checkUser=(req,res,next)=>{
                 console.log(decodedToken)
                 let user= await User.findById(decodedToken.id);
                 res.locals.user=user;
-                
-
+               
                 next()
             }
         })
@@ -46,4 +64,10 @@ const checkUser=(req,res,next)=>{
     }
 }
 
-export { requireAuth, checkUser };
+
+
+
+
+
+
+export { requireAuth, checkUser,blockPath };

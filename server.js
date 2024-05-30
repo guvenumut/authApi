@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import router from './app/routes.js'
 import connectDatabase from './db/connectDB.js';
 import cookieParser from 'cookie-parser';
-import { requireAuth, checkUser }from './middleware/authMiddleWare.js';
+import { requireAuth, checkUser, blockPath }from './middleware/authMiddleWare.js';
 
 dotenv.config();
 connectDatabase()
@@ -12,7 +12,7 @@ connectDatabase()
 const app = express();
 
 
-   
+app.set('view engine', 'ejs');
 
 
 app.use(express.static('public'));
@@ -22,9 +22,9 @@ app.use(cookieParser())
 
 
 
-app.set('view engine', 'ejs');
 
-app.use(checkUser);
+
+app.use(checkUser)
 app.use("/",router)
 
 

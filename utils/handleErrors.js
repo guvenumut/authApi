@@ -5,12 +5,12 @@ const handleErrors = (err) => {
     
     if (err.message === 'Yanlis Email') {
       errors.email = 'Email Adresini kontrol ediniz.';
-      console.log('sadasdadas');
+      
     }
   
     
     if (err.message === 'Yanlis Sifre') {
-      errors.password = 'Sifre veya Email\'i kontrol ediniz';
+      errors.password = 'Sifreyi kontrol ediniz';
     }
   
     
@@ -18,8 +18,10 @@ const handleErrors = (err) => {
       errors.email = 'Email adresi kullanimda.';
       return errors;
     }
-  
-    // validation errors
+    if(err.message==="User validation failed: password: Sifre en az 6 karakterli olmali"){
+      errors.password = 'Sifre en az 6 karakterli olmali';
+    }
+    
     if (err.message.includes('user validation failed')) {
       Object.values(err.errors).forEach(({ properties }) => {
         
