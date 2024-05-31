@@ -5,7 +5,14 @@ import handleErrors from '../utils/handleErrors.js'
 import jwt from "jsonwebtoken"
 import Token from '../db/tokenSchema.js';
 import { requireAuth, checkUser, blockPath }from '../middleware/authMiddleWare.js';
+import bcrypt from "bcrypt"
+import {setItem}from "../db/store.js"
+
+
+
+
 const router = express.Router();
+
 
 
 
@@ -42,12 +49,19 @@ router.get('/login',blockPath,(req,res)=>{
 
 })
 router.post("/login",async(req,res)=>{
-  const {email,password}=req.body;
+  
   try {
+    const {email,password}=req.body;
+    if((email==="")){
+      return res.status(400).json({ errors: handleErrors(new Error('ebb')) })
+    }
+
     const user =await User.login(email,password)
     const token=createToken(user._id);
-    await new Token({ userId: user._id, token }).save();
+    let dbToken=await new Token({ userId: user._id, token }).save();
+    setItem(token)
     res.cookie('jwt',token,{httpOnly:true,maxAge:maxAge*1000});
+
     res.status(200).json({user:user._id});
   } catch (err) {
     const errors=handleErrors(err);
@@ -61,16 +75,58 @@ router.get("/changepassword",requireAuth,(req,res)=>{
 })
 
 
-router.post("/changepassword",async(req,res)=>{
-  const {password,newPassword}=req.body
-  
-  try {
-    
 
-  } catch (error) {
-    
+router.post("/changepassword", async (req, res) => {
+  const reqtoken = req.cookies.jwt;
+  let cookie;
+
+  try {
+    cookie = await Token.findOne({ token: reqtoken });
+    if (!cookie) {
+      return res.status(400).json({ errors: handleErrors(new Error('Invalid token')) });
+    }
+  } catch (err) {
+    return res.status(500).json({ errors: handleErrors(err) });
   }
-})
+
+  const { password, newPassword } = req.body;
+
+  jwt.verify(cookie.token, process.env.JWT_SECRET, async (err, decodedToken) => {
+    if (err) {
+      return res.status(400).json({ errors: handleErrors(new Error('Invalid token')) });
+    }
+
+    try {
+      const user = await User.findOne({ _id: decodedToken.id });
+      if (!user) {
+        return res.status(400).json({ errors: handleErrors(new Error('User not found')) });
+      }
+
+      const passControl = await bcrypt.compare(password, user.password);
+      if (!passControl) {
+        return res.status(400).json({ errors: handleErrors(new Error('Guncel sifreniz yanlis')) });
+      }
+
+      const isSamePassword = await bcrypt.compare(newPassword, user.password);
+      if (isSamePassword) {
+        return res.status(400).json({ errors: handleErrors(new Error('y')) });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      const update = { password: hashedPassword };
+      const options = { new: true };
+
+      const updatedUser = await User.findOneAndUpdate({ _id: user._id }, update, options);
+      console.log('Güncellenmiş kullanıcı:', updatedUser);
+      return res.status(200).json({ message: "Sifre başarıyla güncellendi" });
+
+    } catch (err) {
+      return res.status(500).json({ errors: handleErrors(err) });
+    }
+  });
+});
+
+
 
   const maxAge=3*24*60*60;
   const createToken =(id)=>{

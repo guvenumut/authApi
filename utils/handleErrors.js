@@ -3,11 +3,26 @@ const handleErrors = (err) => {
     let errors = { email: '', password: '' };
   
     
+    if (err.message === 'ebb') {
+      errors.email = 'Email alani bos birakilmaz';
+      
+    }
+
     if (err.message === 'Yanlis Email') {
       errors.email = 'Email Adresini kontrol ediniz.';
       
     }
-  
+
+    
+    
+
+    if(err.message==="Guncel sifreniz yanlis"){
+      errors.email = 'Guncel sifreniz yanlis.';
+    }
+
+    if(err.message==="y"){
+      errors.password="Yeni sifre eski sifre ile aynı olamaz"
+    }
     
     if (err.message === 'Yanlis Sifre') {
       errors.password = 'Sifreyi kontrol ediniz';

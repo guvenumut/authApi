@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema({
     }
   });
   userSchema.pre("save",async function(next){
-    const salt = await bcrypt.genSalt();
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
     this.password=await bcrypt.hash(this.password,salt);
     next();
   })
@@ -37,6 +38,15 @@ const userSchema = new mongoose.Schema({
     throw Error("Yanlis Email");
   }
   
+    
+  
+
+  
+  
+
+
+
+
   const User = mongoose.model('User', userSchema);
 
   export default User;

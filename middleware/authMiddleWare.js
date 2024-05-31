@@ -7,8 +7,8 @@ const requireAuth= async(req,res,next)=>{
     console.log(reqtoken+"reqtoken");
     var cookie = await Token.findOne({token:reqtoken});   
     
-    if(reqtoken){
-        jwt.verify(reqtoken,process.env.JWT_SECRET,(err,decodedToken)=>{
+    if(cookie){
+        jwt.verify(cookie.token,process.env.JWT_SECRET,(err,decodedToken)=>{
             if(err){
                 console.log(err.message+"iferr");
                 res.redirect("/login")
@@ -18,6 +18,7 @@ const requireAuth= async(req,res,next)=>{
             }
         })
     }else{
+        res.cookie('jwt', '', { maxAge: 1 });
         res.redirect("/login");
     }
 }
@@ -31,18 +32,15 @@ const blockPath=(req,res,next)=>{
         next();
     }
 }
-const isCookieExist=async(req,res)=>{
-    let reqtoken=req.cookies.jwt;
-    const cookie = await Token.findOne({token:reqtoken});
 
-}
 
 const checkUser=async(req,res,next)=>{
     const reqtoken=req.cookies.jwt
-       
+    var cookie = await Token.findOne({token:reqtoken});   
+   
     
-    if(reqtoken){
-        jwt.verify(reqtoken,process.env.JWT_SECRET,async(err,decodedToken)=>{
+    if(cookie){
+        jwt.verify(cookie.token,process.env.JWT_SECRET,async(err,decodedToken)=>{
             if(err){
                 console.log(err.message+"iferrrasdr");
                 res.locals.user=null;
