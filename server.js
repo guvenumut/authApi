@@ -1,12 +1,13 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import router from './app/routes.js'
+import router from './routes/routes.js'
 import connectDatabase from './db/connectDB.js';
 import cookieParser from 'cookie-parser';
 import { requireAuth, checkUser, blockPath }from './middleware/authMiddleWare.js';
+import session from "express-session"
 
 dotenv.config();
-connectDatabase()
+
 
 
 const app = express();
@@ -23,17 +24,21 @@ app.use(cookieParser())
 
 
 
+app.use(checkUser);
 
-app.use(checkUser)
+app.get("/",requireAuth,(req,res)=>{res.render("home.ejs")})
 app.use("/",router)
 
 
-
-app.get("/",requireAuth,(req,res)=>{res.render("home.ejs")})
 app.get('/smoothies',requireAuth,(req,res)=>res.render("smoothies"));
 
 
 const PORT = process.env.PORT ;
-app.listen(PORT, () => {
-  console.log(`Sunucu ${PORT} portunda başlatıldı`);
-});
+
+(async function() {
+  await connectDatabase()
+  app.listen(PORT, () => {
+    console.log(`Sunucu ${PORT} portunda başlatıldı`);
+  });
+  
+})();

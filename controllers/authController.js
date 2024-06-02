@@ -1,32 +1,24 @@
 import express from 'express';
 import User from '../db/userSchema.js';
-import isEmail from '../utils/emailControl.js'
 import handleErrors from '../utils/handleErrors.js'
 import jwt from "jsonwebtoken"
 import Token from '../db/tokenSchema.js';
-import { requireAuth, checkUser, blockPath }from '../middleware/authMiddleWare.js';
 import bcrypt from "bcrypt"
-import {setItem}from "../db/store.js"
-
-
-
 
 const router = express.Router();
 
 
-
-
-
-router.get("/signup",blockPath,(req,res)=>{
+export const signup_get =("/signup",(req,res)=>{
   res.render('signup');
 })
 
-router.post('/signup', async (req, res) => {
+export const signup_post =('/signup', async (req, res) => {
   console.log(req.body.email,req.body.password)
   const { email, password } = req.body;
   try {
     const user = await User.create({email,password})
     const token=createToken(user._id)
+    req.session.token=token
     res.cookie('jwt',token,{httpOnly:true,maxAge:maxAge*1000});
     res.status(201).json({user:user._id});
     
@@ -42,13 +34,11 @@ router.post('/signup', async (req, res) => {
 
 
 
-router.get('/login',blockPath,(req,res)=>{
+export const login_get=('/login',(req,res)=>{
   res.render('login')
 
-
-
 })
-router.post("/login",async(req,res)=>{
+export const login_post=("/login",async(req,res)=>{
   
   try {
     const {email,password}=req.body;
@@ -58,10 +48,11 @@ router.post("/login",async(req,res)=>{
 
     const user =await User.login(email,password)
     const token=createToken(user._id);
-    let dbToken=await new Token({ userId: user._id, token }).save();
-    setItem(token)
+    if(!token){
+      return res.status(400).json({ errors: handleErrors(new Error('Token olusturulmadi')) });
+    }
+    await new Token({ userId: user._id, token }).save();
     res.cookie('jwt',token,{httpOnly:true,maxAge:maxAge*1000});
-
     res.status(200).json({user:user._id});
   } catch (err) {
     const errors=handleErrors(err);
@@ -70,13 +61,11 @@ router.post("/login",async(req,res)=>{
 })
 
 
-router.get("/changepassword",requireAuth,(req,res)=>{
+export const changepassword_get=("/changepassword",(req,res)=>{
   res.render("changePassword")
 })
 
-
-
-router.post("/changepassword", async (req, res) => {
+export const changepassword_post=("/changepassword", async (req, res) => {
   const reqtoken = req.cookies.jwt;
   let cookie;
 
@@ -136,7 +125,7 @@ router.post("/changepassword", async (req, res) => {
   }
 
 
-  router.get("/logout",async(req,res)=>{
+  export const logout_get=("/logout",async(req,res)=>{
     const token = req.cookies.jwt;
     console.log(token);
     await Token.findOneAndDelete({ token });
@@ -144,4 +133,3 @@ router.post("/changepassword", async (req, res) => {
     res.redirect('/');
   })
 
-export default router
