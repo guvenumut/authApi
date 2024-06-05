@@ -4,6 +4,7 @@ import handleErrors from '../utils/handleErrors.js'
 import jwt from "jsonwebtoken"
 import Token from '../db/tokenSchema.js';
 import bcrypt from "bcrypt"
+import nodemailer from 'nodemailer';
 
 const router = express.Router();
 
@@ -115,6 +116,44 @@ export const changepassword_post=("/changepassword", async (req, res) => {
   });
 });
 
+
+export const passwordreset_get=("/passwordreset",(req,res)=>{
+  res.render("passwordReset")
+})
+
+export const passwordreset_post=("/passwordreset",(req,res)=>{
+  console.log(req.body.email);
+ try {
+  const transporter = nodemailer.createTransport({
+    host: 'live.smtp.mailtrap.io',
+    port: 587,
+    secure: false, // use SSL
+    auth: {
+      user: '60acec96cf7f7d',
+      pass: 'kwhz zbdy forh gxkp',
+    }
+  });
+  
+  // Configure the mailoptions object
+  const mailOptions = {
+    from: 'mailgonderbanaa@gmail.com ',
+    to: 'umutgk61@gmail.com',
+    subject: 'Sending Email using Node.js',
+    text: 'That was easy!'
+  };
+  
+  // Send the email
+  transporter.sendMail(mailOptions, function(error, info){
+    if (error) {
+      console.log( error);
+    } else {
+      console.log('Email sent: ' + info.response);
+    }
+  });
+ } catch (error) {
+  console.log(error);
+ }
+})
 
 
   const maxAge=3*24*60*60;
