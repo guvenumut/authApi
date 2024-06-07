@@ -25,11 +25,8 @@ app.use(cookieParser())
 
 
 app.use(checkUser);
-
 app.get("/",requireAuth,(req,res)=>{res.render("home.ejs")})
 app.use("/",router)
-
-
 app.get('/smoothies',requireAuth,(req,res)=>res.render("smoothies"));
 
 

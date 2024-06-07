@@ -12,8 +12,6 @@ const handleErrors = (err) => {
       errors.email = 'Email Adresini kontrol ediniz.';
       
     }
-
-    
     
 
     if(err.message==="Guncel sifreniz yanlis"){
@@ -24,9 +22,26 @@ const handleErrors = (err) => {
       errors.password="Yeni sifre eski sifre ile aynı olamaz"
     }
     
+    if(err.message==="Yeni şifre en az 6 karakter uzunluğunda olmalıdır."){
+      errors.password="Yeni şifre en az 6 karakter uzunluğunda olmalıdır."
+    }
+
+    if(err.message==="sao"){
+      errors.password = 'Sifreler Ayni olmalidir';
+    }
+
+    if(err.message==="y"){
+      errors.password="Yeni sifre eski sifre ile aynı olamaz"
+    }
+    
     if (err.message === 'Yanlis Sifre') {
       errors.password = 'Sifreyi kontrol ediniz';
     }
+
+    if (err.message === 'ey') {
+      errors.email = 'Sifre sifirlama mail\'i gonderildi';
+    }
+    
   
     
     if (err.code === 11000) {
