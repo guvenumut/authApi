@@ -21,8 +21,6 @@ export const signup_post =('/signup', async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.create({email,password})
-    const token=createToken(user._id)
-    res.cookie('jwt',token,{httpOnly:true,maxAge:maxAge*1000});
     res.status(201).json({user:user._id});
     
                      
@@ -41,27 +39,25 @@ export const login_get=('/login',(req,res)=>{
   res.render('login')
 
 })
-export const login_post=("/login",async(req,res)=>{
-  
+export const login_post = ("/login", async (req, res) => {
   try {
-    const {email,password}=req.body;
-    if((email==="")){
-      return res.status(400).json({ errors: handleErrors(new Error('ebb')) })
+    const { email, password } = req.body;
+    if (!email) {
+      return res.status(400).json({ errors: handleErrors(new Error('Email boş olamaz')) });
     }
-
-    const user =await User.login(email,password)
-    const token=createToken(user._id);
-    if(!token){
-      return res.status(400).json({ errors: handleErrors(new Error('Token olusturulmadi')) });
+    const user = await User.login(email, password);
+    const token = createToken(user._id);
+    if (!token) {
+      return res.status(400).json({ errors: handleErrors(new Error('Token oluşturulamadı')) });
     }
     await new Token({ userId: user._id, token }).save();
-    res.cookie('jwt',token,{httpOnly:true,maxAge:maxAge*1000});
-    res.status(200).json({user:user._id});
+    res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 });
+    return res.status(200).json({ user: user._id });
   } catch (err) {
-    const errors=handleErrors(err);
-    res.status(400).json({errors});
+    const errors = handleErrors(err);
+    return res.status(400).json({ errors });
   }
-})
+});
 
 
 export const changepassword_get=("/changepassword",(req,res)=>{
@@ -179,13 +175,29 @@ export const resetPassword_post = ("/passwordreset/reset", async (req, res) => {
   console.log("RePassword:", rePassword);
   jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
     const user = await User.findOne({email:decodedToken.email})
+    const isSamePassword = await bcrypt.compare(password, user.password);
+    console.log(isSamePassword);
     console.log(user);
     if (err) {
       return res.status(400).json({ errors: handleErrors(new Error('Invalid token')) });
     }
     if (password!=rePassword) {
-      return res.status(400).json({ errors: handleErrors(new Error('sao')) });
+      return res.status(400).json({ errors: handleErrors(new Error('Sifreler ayni olmalidir.')) });
     }
+    
+    if (isSamePassword) {
+       return res.status(400).json({ errors: handleErrors(new Error('t')) });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+      const update = { password: hashedPassword };
+      const options = { new: true };
+
+    const updatedUser = await User.findOneAndUpdate({ email: user.email}, update, options);
+    await mailToken.findOneAndDelete({mailToken:token})
+      console.log('Güncellenmiş Sifre:', updatedUser);
+      return res.status(200).json({ message: "Sifre başarıyla güncellendi" });
+
     
   })
   
@@ -195,6 +207,13 @@ export const resetPassword_post = ("/passwordreset/reset", async (req, res) => {
 
 
   export const logout_get=("/logout",async(req,res)=>{
+    req.session.destroy(err => {
+      if (err) {
+        return res.redirect('/');
+      }
+      res.clearCookie('connect.sid');
+    });
+    
     const token = req.cookies.jwt;
     console.log(token);
     await Token.findOneAndDelete({ token });

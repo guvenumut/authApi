@@ -12,6 +12,13 @@ dotenv.config();
 
 const app = express();
 
+app.use(session({
+  secret: process.env.SESSION_SECRET, // Güçlü bir gizli anahtar kullanın
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // HTTPS kullanıyorsanız secure: true yapın
+}));
+
 
 app.set('view engine', 'ejs');
 
@@ -25,7 +32,23 @@ app.use(cookieParser())
 
 
 app.use(checkUser);
-app.get("/",requireAuth,(req,res)=>{res.render("home.ejs")})
+app.get("/",requireAuth,(req,res)=>{
+  if (!req.session.clickCount) {
+    req.session.clickCount = 0;
+  }
+  res.render('home', { clickCount: req.session.clickCount });
+});
+
+app.post('/increment', (req, res) => {
+  if (req.session.clickCount !== undefined) {
+    req.session.clickCount++;
+  } else {
+    req.session.clickCount = 1;
+  }
+  res.redirect('/');
+});
+
+
 app.use("/",router)
 app.get('/smoothies',requireAuth,(req,res)=>res.render("smoothies"));
 

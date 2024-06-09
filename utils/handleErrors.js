@@ -26,14 +26,20 @@ const handleErrors = (err) => {
       errors.password="Yeni şifre en az 6 karakter uzunluğunda olmalıdır."
     }
 
-    if(err.message==="sao"){
-      errors.password = 'Sifreler Ayni olmalidir';
+    if(err.message==="Sifreler ayni olmalidir."){
+      errors.password = 'Sifreler ayni olmalidir.';
     }
+    
 
     if(err.message==="y"){
       errors.password="Yeni sifre eski sifre ile aynı olamaz"
     }
-    
+
+    if(err.message==="t"){
+      errors.password="Yeni sifre eski sifre ile aynı olamaz"
+    }
+
+
     if (err.message === 'Yanlis Sifre') {
       errors.password = 'Sifreyi kontrol ediniz';
     }
@@ -41,8 +47,10 @@ const handleErrors = (err) => {
     if (err.message === 'ey') {
       errors.email = 'Sifre sifirlama mail\'i gonderildi';
     }
+    if (err.message === 'User validation failed: email: Duzgun bir email adresi yaziniz') {
+      errors.email = 'Gecerli bir email adresi yaziniz';
+    }
     
-  
     
     if (err.code === 11000) {
       errors.email = 'Email adresi kullanimda.';

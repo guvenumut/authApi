@@ -11,5 +11,11 @@
   </div>
 </header>
 
+<div>
+  <h3>Tıklama Sayısı: <%= clickCount %></h3>
+  <form action="/increment" method="POST">
+    <button type="submit">Tıkla</button>
+  </form>
+</div>
 
 <%- include('partials/footer'); -%>
