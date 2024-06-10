@@ -9,8 +9,8 @@ import nodemailer from 'nodemailer';
           port: 587,
           secure: false, // use SSL
           auth: {
-            user: 'mailgonderbanaa@gmail.com ',
-            pass: 'ncha kfuk dkqu mqfy',
+            user: process.env.MAIL,
+            pass: process.env.PASS,
           }
         });
         
@@ -18,11 +18,11 @@ import nodemailer from 'nodemailer';
         const mailOptions = {
           from: {
             name:"Ninja Smoothies",
-            address:"mailgonderbanaa@gmail.com"
+            address:process.env.MAIL
           },
           to: Email,
           subject: 'Reset Your Password',
-          text: "Sifre Degistirme Linkini: "+url
+          text: "Sifre Degistirme Linki: "+url
         };
         
         // Send the email

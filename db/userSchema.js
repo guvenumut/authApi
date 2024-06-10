@@ -10,12 +10,12 @@ const userSchema = new mongoose.Schema({
       required: [true,'Email Giriniz.'],
       unique:true,
       lowercase:true,
-      validate:[isEmail,'Duzgun bir email adresi yaziniz']
+      validate:[isEmail,'gecerliMailGiriniz']
     },
     password: { 
       type: String, 
-      required:[true,"Sifre Giriniz"],
-      minLength:[6,'Sifre en az 6 karakterli olmali']
+      required:[true,"sifreGiriniz"],
+      minLength:[6,'sifre6karakterOlamlidir']
 
     }
   });

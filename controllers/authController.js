@@ -26,7 +26,7 @@ export const signup_post =('/signup', async (req, res) => {
                      
     
   } catch (err) {
-    const errors = handleErrors(err)
+    const error = handleErrors(err)
     res.status(400).json({errors})
   }
 });
@@ -62,6 +62,7 @@ export const login_post = ("/login", async (req, res) => {
 
 export const changepassword_get=("/changepassword",(req,res)=>{
   res.render("changePassword")
+  console.log(req);
 })
 
 export const changepassword_post=("/changepassword", async (req, res) => {
@@ -100,7 +101,7 @@ export const changepassword_post=("/changepassword", async (req, res) => {
 
       const isSamePassword = await bcrypt.compare(newPassword, user.password);
       if (isSamePassword) {
-        return res.status(400).json({ errors: handleErrors(new Error('y')) });
+        return res.status(200).json({ errors: handleErrors(new Error('y')) });
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
@@ -132,7 +133,7 @@ export const forgetPassword_post = ("/forgetpassword", async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json();
+      return res.status(200).json({ errors: handleErrors(new Error('ey')) });
     }
 
     const jwt = await createMailToken(user.email);
@@ -156,28 +157,26 @@ export const resetPassword_get = ("/passwordreset/reset", async (req, res) => {
     const dbToken = await mailToken.findOne({ mailToken: token });
     console.log(dbToken);
     if (!dbToken) {
-      // Token veritabanında bulunamadıysa hata mesajı gönder
+      
       return res.redirect("/login");
     }
 
-    // Token eşleştiyse resetPassword sayfasını render et ve token'ı gizli alanda gönder
+   
     res.render('resetPassword', { token });
   } catch (error) {
-    // Hata oluşursa hata mesajı gönder
+    
     res.status(500).send('Sunucu hatası. Lütfen daha sonra tekrar deneyin.');
   }
 });
 
 export const resetPassword_post = ("/passwordreset/reset", async (req, res) => {
   const { password, rePassword, token } = req.body;
-  console.log(token); 
-  console.log("Password:", password);
-  console.log("RePassword:", rePassword);
+
   jwt.verify(token, process.env.JWT_SECRET, async (err, decodedToken) => {
     const user = await User.findOne({email:decodedToken.email})
     const isSamePassword = await bcrypt.compare(password, user.password);
-    console.log(isSamePassword);
-    console.log(user);
+    
+    
     if (err) {
       return res.status(400).json({ errors: handleErrors(new Error('Invalid token')) });
     }
@@ -187,6 +186,9 @@ export const resetPassword_post = ("/passwordreset/reset", async (req, res) => {
     
     if (isSamePassword) {
        return res.status(400).json({ errors: handleErrors(new Error('t')) });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ errors: handleErrors(new Error('Yeni şifre en az 6 karakter uzunluğunda olmalıdır.'))   });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -207,13 +209,6 @@ export const resetPassword_post = ("/passwordreset/reset", async (req, res) => {
 
 
   export const logout_get=("/logout",async(req,res)=>{
-    req.session.destroy(err => {
-      if (err) {
-        return res.redirect('/');
-      }
-      res.clearCookie('connect.sid');
-    });
-    
     const token = req.cookies.jwt;
     console.log(token);
     await Token.findOneAndDelete({ token });
@@ -230,7 +225,7 @@ export const resetPassword_post = ("/passwordreset/reset", async (req, res) => {
     })
   }
 
-  const maxAgeMail =3*24*60*60;
+  const maxAgeMail = 15 * 60;
   const createMailToken =(email)=>{
     return jwt.sign({email},process.env.JWT_SECRET,{
       expiresIn:maxAgeMail

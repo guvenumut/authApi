@@ -47,7 +47,7 @@ const handleErrors = (err) => {
     if (err.message === 'ey') {
       errors.email = 'Sifre sifirlama mail\'i gonderildi';
     }
-    if (err.message === 'User validation failed: email: Duzgun bir email adresi yaziniz') {
+    if (err.message ==='User validation failed: email: gecerliMailGiriniz') {
       errors.email = 'Gecerli bir email adresi yaziniz';
     }
     
@@ -56,7 +56,7 @@ const handleErrors = (err) => {
       errors.email = 'Email adresi kullanimda.';
       return errors;
     }
-    if(err.message==="User validation failed: password: Sifre en az 6 karakterli olmali"){
+    if(err.message==="User validation failed: password: sifre6karakterOlamlidir"){
       errors.password = 'Sifre en az 6 karakterli olmali';
     }
     

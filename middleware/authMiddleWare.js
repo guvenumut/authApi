@@ -14,7 +14,7 @@ const requireAuth = async (req, res, next) => {
       
       if (!cookie) {
         
-        res.cookie('jwt',sessioncookie, { maxAge: 1 });
+        res.cookie('jwt','', { maxAge: 1 });
         
         
         
@@ -35,10 +35,10 @@ const requireAuth = async (req, res, next) => {
     }
   };
 
-const blockPath = (req, res, next) => {
+const blockPath = async(req, res, next) => {
     const reqtoken = req.cookies.jwt;
-  
-    if (reqtoken) {
+    const cookie = await Token.findOne({ token: reqtoken });
+    if (cookie) {
       return res.redirect('/');
     } else {
       next();
@@ -53,7 +53,7 @@ const blockPath = (req, res, next) => {
     const reqtoken = req.cookies.jwt;
   
     if (!reqtoken) {
-      req.session.user = null;
+      
       res.locals.user = null; // EJS'ye veri geçmek için
       next();
       return;
@@ -63,7 +63,7 @@ const blockPath = (req, res, next) => {
       const cookie = await Token.findOne({ token: reqtoken });
   
       if (!cookie) {
-        req.session.user = null;
+       
         res.locals.user = null; // EJS'ye veri geçmek için
         next();
         return;
@@ -72,21 +72,19 @@ const blockPath = (req, res, next) => {
       jwt.verify(cookie.token, process.env.JWT_SECRET, async (err, decodedToken) => {
         if (err) {
           console.log(err.message + ' token dogrulama hatasi');
-          req.session.user = null;
+          
           res.locals.user = null; // EJS'ye veri geçmek için
           next();
         } else {
-          console.log(decodedToken);
           const user = await User.findById(decodedToken.id);
           console.log(user);
-          req.session.user = user;
+          
           res.locals.user = user; // EJS'ye veri geçmek için
           next();
         }
       });
     } catch (error) {
-      console.error('checkUser middleware hatasi:', error);
-      req.session.user = null;
+      console.log('checkUser middleware hatasi:', error);
       res.locals.user = null; // EJS'ye veri geçmek için
       next();
     }
