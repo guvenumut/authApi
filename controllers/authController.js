@@ -26,7 +26,7 @@ export const signup_post =('/signup', async (req, res) => {
                      
     
   } catch (err) {
-    const error = handleErrors(err)
+    const errors = handleErrors(err)
     res.status(400).json({errors})
   }
 });
@@ -67,10 +67,10 @@ export const changepassword_get=("/changepassword",(req,res)=>{
 
 export const changepassword_post=("/changepassword", async (req, res) => {
   const reqtoken = req.cookies.jwt;
-  let cookie;
+  
 
   try {
-    cookie = await Token.findOne({ token: reqtoken });
+    let cookie= await Token.findOne({ token: reqtoken });
     if (!cookie) {
       return res.status(400).json({ errors: handleErrors(new Error('Invalid token')) });
     }
@@ -187,7 +187,7 @@ export const resetPassword_post = ("/passwordreset/reset", async (req, res) => {
     if (isSamePassword) {
        return res.status(400).json({ errors: handleErrors(new Error('t')) });
     }
-    if (newPassword.length < 6) {
+    if (password.length < 6) {
       return res.status(400).json({ errors: handleErrors(new Error('Yeni şifre en az 6 karakter uzunluğunda olmalıdır.'))   });
     }
 
